@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 static bool
 arm64_is_bit_set(uint64_t reg, uint32_t bit)
