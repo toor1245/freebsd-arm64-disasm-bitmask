@@ -191,7 +191,7 @@ int main()
     	size_t len = 0;
     	ssize_t read = 0;
 	uint64_t immn = 0;
-       	uint64_t immr = 0;
+	uint64_t immr = 0;
 	uint64_t imms = 0;
 	uint64_t imm = 0;
 	char *subline;
