@@ -177,7 +177,7 @@ int main() {
   uint64_t immr = 0;
   uint64_t imms = 0;
   uint64_t imm = 0;
-  char *subline;
+  char *subline = NULL;
   bool is_decoded = false;
 
   file = fopen("./all_possible_bitmask_imm.txt", "r");
