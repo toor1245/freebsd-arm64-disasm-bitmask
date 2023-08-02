@@ -167,6 +167,23 @@ static bool arm64_move_wide_preferred(int sf, uint32_t immn, uint32_t imms,
   return (false);
 }
 
+static void compare_input_imm_with_decoded_result(uint64_t imm, uint64_t immn,
+                                                  uint64_t immr, uint64_t imms,
+                                                  uint64_t *wmask) {
+  bool is_decoded = false;
+
+  printf("imm: 0x%lx\timmn: %lu immr: %lu imms: %lu", imm, immn, immr, imms);
+
+  is_decoded = arm64_disasm_bit_masks(immn, imms, immr, true, wmask);
+  printf(", decoded: %d, arm64_disasm_bitmask: %lx, imm == wmask: %d\n",
+         is_decoded, *wmask, imm == *wmask);
+
+  if (imm != *wmask) {
+    printf("ERROR: decoded result is not equal to expected value\n");
+    exit(1);
+  }
+}
+
 int main() {
   FILE *file = NULL;
   char *line = NULL;
@@ -176,9 +193,8 @@ int main() {
   uint64_t immn = 0;
   uint64_t immr = 0;
   uint64_t imms = 0;
-  uint64_t imm = 0;
+  uint64_t expected_imm = 0;
   char *subline = NULL;
-  bool is_decoded = false;
 
   file = fopen("./all_possible_bitmask_imm.txt", "r");
   if (file == NULL) {
@@ -188,7 +204,7 @@ int main() {
 
   while ((read = getline(&line, &len, file)) != -1) {
     subline = strtok(line, " ");
-    imm = strtoull(subline, NULL, 16);
+    expected_imm = strtoull(subline, NULL, 16);
 
     for (int i = 1; subline != NULL; ++i) {
       subline = strtok(NULL, " ");
@@ -199,14 +215,13 @@ int main() {
       if (i == 7)
         imms = strtoul(subline + 5, NULL, 2);
     }
-    printf("imm: 0x%lx\timmn: %lu immr: %lu imms: %lu", imm, immn, immr, imms);
-    is_decoded = arm64_disasm_bit_masks(immn, imms, immr, true, &wmask);
-    printf(", decoded: %d, arm64_disasm_bitmask: %lx, imm == wmask: %d\n",
-           is_decoded, wmask, imm == wmask);
-    if (imm != wmask) {
-      printf("ERROR: decoded invalid");
-      return 0;
-    }
+
+#if 0
+    compare_input_imm_with_decoded_result(expected_imm, immn, immr, imms,
+                                          &wmask);
+#else
+    printf("\torr\tsp, x1, #0x%lx\n", expected_imm);
+#endif
   }
 
   fclose(file);
