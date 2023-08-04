@@ -5,6 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline int
+flsl(long mask)
+{
+
+	return (mask == 0 ? 0 :
+	    8 * sizeof(mask) - __builtin_clzl((u_long)mask));
+}
+
 static bool arm64_is_bit_set(uint64_t value, uint32_t bit) {
   return ((value >> bit) & 0x1);
 }
@@ -86,7 +94,7 @@ static bool arm64_disasm_bit_masks(uint32_t n, uint32_t imms, uint32_t immr,
                                    bool logical_imm, uint64_t *wmask) {
   uint64_t welem;
   uint32_t levels, s, r;
-  int length, esize;
+  int length, length2, esize;
 
   /*
    * Finds the highest set bit of immN:NOT(imms).
@@ -94,6 +102,7 @@ static bool arm64_disasm_bit_masks(uint32_t n, uint32_t imms, uint32_t immr,
    * thus we start from 6 index.
    */
   length = arm64_highest_set_bit((n << 6) | (~imms & 0x3F));
+  length2 = flsl((n << 6) | (~imms & 0x3F)) - 1;
 
   if (length < 1)
     return (false);
@@ -216,11 +225,11 @@ int main() {
         imms = strtoul(subline + 5, NULL, 2);
     }
 
-#if 0
+#if 1
     compare_input_imm_with_decoded_result(expected_imm, immn, immr, imms,
                                           &wmask);
 #else
-    printf("\torr\tsp, x1, #0x%lx\n", expected_imm);
+    printf("\torr\tsp, x1, #0x%d\n", expected_imm);
 #endif
   }
 
